@@ -1,0 +1,108 @@
+{
+  "name": "jsonl-viewer",
+  "displayName": "JSONL Viewer",
+  "description": "Open JSONL and NDJSON files as a table, as pretty records or as a chat view for LLM datasets. Fast on large files, with search, filters and live tail. Offline.",
+  "version": "0.1.0",
+  "publisher": "zovo",
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": { "color": "#14213D", "theme": "dark" },
+  "engines": { "vscode": "^1.90.0", "node": ">=18" },
+  "categories": ["Data Science", "Visualization", "Machine Learning", "Other"],
+  "keywords": [
+    "jsonl", "ndjson", "json lines", "jsonlines", "jsonl viewer", "json", "viewer", "preview", "table", "dataset",
+    "fine-tuning", "openai", "chat", "messages", "evals", "llm", "ai", "logs", "structured logs", "large files",
+    "huggingface", "machine learning", "data science", "records", "filter", "search", "schema", "pretty print", "export csv", "offline"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "capabilities": {
+    "untrustedWorkspaces": { "supported": true },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "jsonlViewer.viewer",
+        "displayName": "JSONL Viewer",
+        "selector": [
+          { "filenamePattern": "*.jsonl" },
+          { "filenamePattern": "*.ndjson" },
+          { "filenamePattern": "*.jsonlines" },
+          { "filenamePattern": "*.jsonl.gz" },
+          { "filenamePattern": "*.ndjson.gz" }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      { "command": "jsonlViewer.open", "title": "Open in JSONL Viewer", "category": "JSONL Viewer", "icon": "$(table)" },
+      { "command": "jsonlViewer.getStarted", "title": "Get Started", "category": "JSONL Viewer" }
+    ],
+    "menus": {
+      "explorer/context": [
+        { "command": "jsonlViewer.open", "when": "resourceFilename =~ /\\.(jsonl|ndjson|jsonlines)(\\.gz)?$/i", "group": "navigation@20" }
+      ],
+      "editor/title": [
+        { "command": "jsonlViewer.open", "when": "resourceFilename =~ /\\.(jsonl|ndjson|jsonlines)$/i && activeEditor == workbench.editors.files.textFileEditor", "group": "navigation" }
+      ],
+      "commandPalette": [
+        { "command": "jsonlViewer.open", "when": "resourceFilename =~ /\\.(jsonl|ndjson|jsonlines)(\\.gz)?$/i" }
+      ]
+    },
+    "configuration": {
+      "title": "JSONL Viewer",
+      "properties": {
+        "jsonlViewer.liveTail": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add new records while the file grows (for logs that are still being written). The file is checked every 2 s while its tab is visible, and on file change events."
+        }
+      }
+    },
+    "walkthroughs": [
+      {
+        "id": "jsonlViewer.start",
+        "title": "Get started with JSONL Viewer",
+        "description": "Open a JSON Lines file as a table, a record tree or a chat.",
+        "steps": [
+          {
+            "id": "open",
+            "title": "Open a .jsonl or .ndjson file",
+            "description": "Click any .jsonl, .ndjson, .jsonlines or .jsonl.gz file. It opens as a table. To see the plain text, click Open as Text.\n[Find a .jsonl file](command:workbench.action.quickOpen?%5B%22.jsonl%22%5D)",
+            "media": { "markdown": "walkthrough/open.md" },
+            "completionEvents": ["onCommand:workbench.action.quickOpen"]
+          },
+          {
+            "id": "find",
+            "title": "Find and filter",
+            "description": "Type text in Find, or a filter such as level == error and ctx.ms > 500, then press Enter. The whole file is searched in the background and you can cancel at any time.",
+            "media": { "markdown": "walkthrough/find.md" }
+          },
+          {
+            "id": "chat",
+            "title": "Read a chat dataset",
+            "description": "Files with messages (OpenAI style), conversations (ShareGPT) or role and content open in the Chat view, with tool calls shown inline.",
+            "media": { "markdown": "walkthrough/chat.md" }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build.js --production",
+    "test": "node --test test/*.test.js",
+    "samples": "node scripts/make-samples.js",
+    "vscode:prepublish": "node scripts/build.js --production",
+    "package": "npx -y @vscode/vsce@3 package -o dist/"
+  },
+  "repository": { "type": "git", "url": "https://github.com/theluckystrike/jsonl-viewer-vscode" },
+  "homepage": "https://github.com/theluckystrike/jsonl-viewer-vscode#readme",
+  "bugs": { "url": "https://github.com/theluckystrike/jsonl-viewer-vscode/issues" },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2"
+  }
+}
