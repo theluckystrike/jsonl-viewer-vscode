@@ -6,6 +6,9 @@ const { createSession, JsonlDoc } = require('./core/protocol');
 const { TooBigError } = require('./core/doc');
 const { buildHtml } = require('./html');
 const L = require('./core/limits');
+const { createRatingPrompt } = require('./rate');
+
+let rating = { success() {} };
 
 const VIEW_TYPE = 'jsonlViewer.viewer';
 const TEXT_SYNC_LIMIT = 50 * 1024 * 1024; // VS Code does not sync larger text files to extensions
@@ -33,7 +36,11 @@ class JsonlEditorProvider {
     if (uri.scheme === 'file') doc = makeDoc();
     else doc = await remoteDoc(uri);
 
-    const post = m => { panel.webview.postMessage(m).then(undefined, () => {}); };
+    let counted = false; // one success per opened tab, for the rating prompt
+    const post = m => {
+      panel.webview.postMessage(m).then(undefined, () => {});
+      if (!counted && m && m.type === 'init' && !m.error) { counted = true; rating.success(); }
+    };
     const session = createSession({
       doc,
       post,
@@ -120,6 +127,7 @@ async function openWriter(uri, format, name) {
 }
 
 function activate(context) {
+  rating = createRatingPrompt({ vscode, context, extensionId: 'zovo.jsonl-viewer', section: 'jsonlViewer', message: (n) => `JSONL Viewer has opened ${n} files for you. A rating helps other people find it.` });
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(VIEW_TYPE, new JsonlEditorProvider(context), {
       supportsMultipleEditorsPerDocument: true,

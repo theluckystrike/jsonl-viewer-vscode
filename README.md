@@ -60,7 +60,10 @@ JSONL Viewer runs offline. It makes no network calls and has no telemetry. The w
 
 ## Settings
 
-`jsonlViewer.liveTail` (default on) adds new records while the file grows.
+| Setting | Default | What it does |
+|---|---|---|
+| `jsonlViewer.liveTail` | `true` | Add new records while the file grows |
+| `jsonlViewer.askForRating` | `true` | Ask one time for a Marketplace rating, after 5 files and 2 days. Turn it off with `false` |
 
 ## Using it with Agent Session Viewer
 
