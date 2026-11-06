@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3 (2026-11-07)
+
+- The "More free viewers" list and the README list now show the 15 Zovo extensions on the Marketplace under their current names, and 12 that are coming soon.
+- Extensions for related files now come first, starting with Large JSON Viewer & JSON Tree and CSV Viewer, Excel Viewer & Parquet Viewer.
+
 ## 0.1.2 (2026-11-06)
 
 - The status line at the bottom of the viewer ends with two small links, "Sponsor" (GitHub Sponsors) and "More free viewers". The new setting `jsonlViewer.showSupportLinks` (default `true`) hides them, and so does the "Hide" link next to them. There is no popup, and nothing is sent anywhere.
