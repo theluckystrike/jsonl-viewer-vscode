@@ -7,6 +7,7 @@ const { TooBigError } = require('./core/doc');
 const { buildHtml } = require('./html');
 const L = require('./core/limits');
 const { createRatingPrompt } = require('./rate');
+const { registerSupport, commandUris, showLinks } = require('./support');
 
 let rating = { success() {} };
 
@@ -23,12 +24,14 @@ class JsonlEditorProvider {
     const ctx = this.context;
     const dist = vscode.Uri.joinPath(ctx.extensionUri, 'dist');
     const media = vscode.Uri.joinPath(ctx.extensionUri, 'media');
-    panel.webview.options = { enableScripts: true, localResourceRoots: [dist, media] };
+    // Command links are limited to the two support commands and the settings page (footer "Hide" link).
+    panel.webview.options = { enableScripts: true, localResourceRoots: [dist, media], enableCommandUris: commandUris('jsonlViewer') };
     panel.webview.html = buildHtml({
       cspSource: panel.webview.cspSource,
       scriptUri: panel.webview.asWebviewUri(vscode.Uri.joinPath(dist, 'webview.js')).toString(),
       styleUri: panel.webview.asWebviewUri(vscode.Uri.joinPath(media, 'webview.css')).toString(),
       title: path.posix.basename(uri.path),
+      showSupportLinks: showLinks(vscode, 'jsonlViewer'),
     });
 
     const makeDoc = () => new JsonlDoc({ path: uri.fsPath });
@@ -128,6 +131,7 @@ async function openWriter(uri, format, name) {
 
 function activate(context) {
   rating = createRatingPrompt({ vscode, context, extensionId: 'zovo.jsonl-viewer', section: 'jsonlViewer', message: (n) => `JSONL Viewer has opened ${n} files for you. A rating helps other people find it.` });
+  registerSupport({ vscode, context, prefix: 'jsonlViewer', selfId: 'zovo.jsonl-viewer' });
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(VIEW_TYPE, new JsonlEditorProvider(context), {
       supportsMultipleEditorsPerDocument: true,

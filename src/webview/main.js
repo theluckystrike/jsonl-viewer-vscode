@@ -161,6 +161,9 @@ status.append(statusLeft, statusMid, statusRight);
 const toast = el('div', 'toast');
 toast.hidden = true;
 app.append(toolbar, findbar, banner, main, status, toast);
+// The host renders the Sponsor and More free viewers line (or leaves it out when the setting hides it).
+const supportLine = document.getElementById('zovo-support');
+if (supportLine) status.append(supportLine);
 
 let toastTimer = null;
 function flash(text) {
