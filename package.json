@@ -1,5 +1,5 @@
 {
-  "name": "jsonl-viewer",
+  "name": "zovo-jsonl-viewer",
   "displayName": "JSONL Viewer",
   "description": "Open JSONL and NDJSON files as a table, as pretty records or as a chat view for LLM datasets. Fast on large files, with search, filters and live tail. Offline.",
   "version": "0.1.2",

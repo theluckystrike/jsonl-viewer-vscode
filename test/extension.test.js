@@ -43,7 +43,7 @@ test('support: package.json has the sponsor field, the two commands and the sett
   const cfg = Array.isArray(pkg.contributes.configuration) ? pkg.contributes.configuration : [pkg.contributes.configuration];
   const props = Object.assign({}, ...cfg.map(c => c.properties));
   assert.strictEqual(props['jsonlViewer.showSupportLinks'].default, true);
-  assert.ok(support.otherProducts('zovo.jsonl-viewer').every(p => p.id !== 'zovo.jsonl-viewer'));
+  assert.ok(support.otherProducts('zovo.zovo-jsonl-viewer').every(p => p.id !== 'zovo.zovo-jsonl-viewer'));
 });
 
 test('support: the footer shows by default and jsonlViewer.showSupportLinks=false hides it', async () => {

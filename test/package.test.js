@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const pkg = require('../package.json');
 
 test('manifest: id, 30 unique keywords, editor selectors, engine', () => {
-  assert.strictEqual(`${pkg.publisher}.${pkg.name}`, 'zovo.jsonl-viewer');
+  assert.strictEqual(`${pkg.publisher}.${pkg.name}`, 'zovo.zovo-jsonl-viewer');
   assert.strictEqual(pkg.displayName, 'JSONL Viewer');
   assert.strictEqual(pkg.keywords.length, 30);
   assert.strictEqual(new Set(pkg.keywords).size, 30);

@@ -63,7 +63,7 @@ const LIVE = [
 ];
 const QUEUED = [
   [
-    "zovo.jsonl-viewer",
+    "zovo.zovo-jsonl-viewer",
     "JSONL Viewer",
     "opens JSONL and NDJSON files as a table, as records or as a chat view.",
     "https://github.com/theluckystrike/jsonl-viewer-vscode"

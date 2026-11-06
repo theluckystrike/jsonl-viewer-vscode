@@ -130,8 +130,8 @@ async function openWriter(uri, format, name) {
 }
 
 function activate(context) {
-  rating = createRatingPrompt({ vscode, context, extensionId: 'zovo.jsonl-viewer', section: 'jsonlViewer', message: (n) => `JSONL Viewer has opened ${n} files for you. A rating helps other people find it.` });
-  registerSupport({ vscode, context, prefix: 'jsonlViewer', selfId: 'zovo.jsonl-viewer' });
+  rating = createRatingPrompt({ vscode, context, extensionId: 'zovo.zovo-jsonl-viewer', section: 'jsonlViewer', message: (n) => `JSONL Viewer has opened ${n} files for you. A rating helps other people find it.` });
+  registerSupport({ vscode, context, prefix: 'jsonlViewer', selfId: 'zovo.zovo-jsonl-viewer' });
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(VIEW_TYPE, new JsonlEditorProvider(context), {
       supportsMultipleEditorsPerDocument: true,
@@ -143,7 +143,7 @@ function activate(context) {
       await vscode.commands.executeCommand('vscode.openWith', target, VIEW_TYPE);
     }),
     vscode.commands.registerCommand('jsonlViewer.getStarted', () =>
-      vscode.commands.executeCommand('workbench.action.openWalkthrough', 'zovo.jsonl-viewer#jsonlViewer.start', false)),
+      vscode.commands.executeCommand('workbench.action.openWalkthrough', 'zovo.zovo-jsonl-viewer#jsonlViewer.start', false)),
   );
 }
 

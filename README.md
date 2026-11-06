@@ -1,7 +1,7 @@
 # JSONL Viewer
 
-<a href="https://marketplace.visualstudio.com/items?itemName=zovo.jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/i/zovo.jsonl-viewer?label=VS%20Code%20installs" alt="VS Code installs"></a>
-<a href="https://marketplace.visualstudio.com/items?itemName=zovo.jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/v/zovo.jsonl-viewer?label=version" alt="Version"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/i/zovo.zovo-jsonl-viewer?label=VS%20Code%20installs" alt="VS Code installs"></a>
+<a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/v/zovo.zovo-jsonl-viewer?label=version" alt="Version"></a>
 <img src="https://img.shields.io/badge/offline-no%20telemetry-2ea44f" alt="Offline, no telemetry">
 
 Open any `.jsonl`, `.ndjson` or `.jsonl.gz` file as a table, a record tree or a chat transcript, with the first rows on screen before the rest of the file is read.
