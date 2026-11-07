@@ -46,3 +46,9 @@ test('grid math: scroll maps to rows past the browser height limit', () => {
   assert.deepStrictEqual(M.pagesFor(150, 450, 200), [0, 1, 2]);
   assert.deepStrictEqual(M.nextSort(null, 2), { col: 2, dir: 'asc' });
 });
+
+test('auto-size resizes the table stage, so the last column is never cut off', () => {
+  const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'webview', 'main.js'), 'utf8');
+  const body = src.slice(src.indexOf('function autoSize('), src.indexOf('// ---------- body ----------'));
+  assert.ok(/buildHeader\(\);\s*(\/\/[^\n]*\n\s*)*layout\(\);\s*}/.test(body), body);
+});

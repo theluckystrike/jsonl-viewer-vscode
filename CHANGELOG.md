@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 (2026-11-07)
+
+- Fix: when the table was narrower than the editor, its last column was cut off after the first rows loaded, so numbers in that column did not show. The table now widens with its columns.
+
 ## 0.2.0 (2026-11-07)
 
 - Columns: a Columns button above the table shows or hides each column, with a find box, Show all and Hide all but first. Drag a column edge in the header to change its width, and double-click it to fit again. The tab remembers both.

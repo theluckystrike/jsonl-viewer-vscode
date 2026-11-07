@@ -389,6 +389,9 @@ function autoSize(rows) {
     S.widths[c] = M.autoWidth(S.columns[c].name, typeLabel(S.columns[c]), samples);
   }
   buildHeader();
+  // The new widths change the table width: resize the stage too, or the last column is cut off
+  // (right-aligned numbers in it vanish when the table is narrower than the editor).
+  layout();
 }
 
 // ---------- body ----------
