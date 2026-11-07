@@ -2,7 +2,7 @@
   "name": "zovo-jsonl-viewer",
   "displayName": "JSONL Viewer, Large JSONL Table & NDJSON Viewer",
   "description": "JSONL viewer and NDJSON viewer that opens .jsonl, .ndjson and .log files as a table, as pretty records or as a chat view for LLM datasets. Hide and resize columns. Fast on large files. Offline.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "zovo",
   "license": "MIT",
   "icon": "icon.png",

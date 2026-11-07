@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3 (2026-11-08)
+
+- The "More free viewers" list and the README now use the current Marketplace names and include the newest Zovo extensions: ZIP, GCode, EPUB, HAR, font and audio viewers.
+
 ## 0.2.2 (2026-11-07)
 
 - The Marketplace name is now "JSONL Viewer, Large JSONL Table & NDJSON Viewer" (it was "JSONL Viewer & NDJSON Viewer (JSONL Table)"). The extension id, commands and settings stay the same.
