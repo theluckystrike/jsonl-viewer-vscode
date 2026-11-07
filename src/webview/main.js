@@ -38,6 +38,8 @@ const S = {
   info: null,
   fatal: '',
   job: null,
+  hidden: new Set(saved.hidden || []), // column names the user hid (kept per tab)
+  userW: Object.assign(Object.create(null), saved.widths || {}), // column widths the user dragged, by name
 };
 
 function el(tag, cls, text) {
@@ -57,7 +59,12 @@ function fmtBytes(n) {
 }
 function fmtMs(ms) { return ms < 1000 ? `${Math.max(1, Math.round(ms))} ms` : `${(ms / 1000).toFixed(2)} s`; }
 function post(m) { vscode.postMessage(m); }
-function saveState() { vscode.setState({ mode: S.mode }); }
+function saveState() {
+  const widths = {};
+  let n = 0;
+  for (const k of Object.keys(S.userW)) { if (n++ >= 500) break; widths[k] = S.userW[k]; }
+  vscode.setState({ mode: S.mode, hidden: [...S.hidden].slice(0, 1000), widths });
+}
 
 // ---------- layout ----------
 const app = document.getElementById('app');
@@ -99,13 +106,33 @@ const exportSel = el('select', 'export');
 exportSel.setAttribute('aria-label', 'Export');
 for (const [v, t] of [['', 'Export…'], ['csv', 'CSV'], ['json', 'JSON array'], ['jsonl', 'JSON Lines']]) { const o = el('option', null, t); o.value = v; exportSel.append(o); }
 exportSel.title = 'Save the records in view (after Find and sort) to a file';
-findbar.append(search, filter, btnRun, btnCancel, jobText, el('span', 'spacer'), lineInput, btnFollow, exportSel);
+const btnCols = btn('Columns', 'Show or hide columns. Drag a column edge in the header to change its width.');
+btnCols.setAttribute('aria-haspopup', 'true');
+findbar.append(search, filter, btnRun, btnCancel, jobText, el('span', 'spacer'), lineInput, btnCols, btnFollow, exportSel);
+// column chooser
+const colMenu = el('div', 'colmenu');
+colMenu.hidden = true;
+colMenu.setAttribute('role', 'dialog');
+colMenu.setAttribute('aria-label', 'Columns');
 
 const banner = el('div', 'banner');
 banner.hidden = true;
 const bannerText = el('span', 'btext');
 const bannerAct = btn('Show all', 'Clear the search, filter and sort', 'link');
 banner.append(bannerText, bannerAct);
+
+// shown when none of the sampled lines is JSON (a log or a pretty-printed .json opened as JSON Lines)
+const hint = el('div', 'banner hint');
+hint.hidden = true;
+const hintText = el('span', 'btext');
+const hintAct = btn('Open as Text', 'Open the file in the normal text editor', 'link');
+hint.append(hintText, hintAct);
+hintAct.addEventListener('click', () => post({ type: 'openAsText' }));
+function showHint(m) {
+  const none = m.sampled > 0 && m.sampledOk === 0;
+  hint.hidden = !none;
+  if (none) hintText.textContent = `None of the first ${fmtN(m.sampled)} lines is valid JSON, so this file may not be JSON Lines. Each line shows in red with the reason. A single JSON document spread over many lines reads better in the text editor or a JSON tree viewer.`;
+}
 
 const main = el('div', 'main');
 // table
@@ -160,7 +187,7 @@ const statusRight = el('span', 'right');
 status.append(statusLeft, statusMid, statusRight);
 const toast = el('div', 'toast');
 toast.hidden = true;
-app.append(toolbar, findbar, banner, main, status, toast);
+app.append(toolbar, findbar, banner, hint, main, status, toast, colMenu);
 // The host renders the Sponsor and More free viewers line (or leaves it out when the setting hides it).
 const supportLine = document.getElementById('zovo-support');
 if (supportLine) status.append(supportLine);
@@ -199,7 +226,11 @@ btnText.addEventListener('click', () => post({ type: 'openAsText' }));
 
 // ---------- header ----------
 function typeLabel(c) { return `${c.type} · ${c.fill}%`; }
-function totalWidth() { return S.gutterW + S.widths.reduce((a, b) => a + b, 0); }
+// Width of the table content. Rows for bad or truncated lines need room even when no column is shown.
+function contentWidth() { return Math.max(totalWidth(), S.gutterW + 300, shownColsVisible() ? 0 : grid.clientWidth - 2); }
+function shownColsVisible() { let k = 0; for (let c = 0; c < shownCols(); c++) if (!isHidden(c)) k++; return k; }
+function isHidden(c) { return S.columns[c] ? S.hidden.has(S.columns[c].name) : false; }
+function totalWidth() { let w = S.gutterW; for (let c = 0; c < S.widths.length; c++) if (!isHidden(c)) w += S.widths[c]; return w; }
 function shownCols() { return Math.min(S.columns.length, MAX_COLS); }
 
 function buildHeader() {
@@ -208,8 +239,15 @@ function buildHeader() {
   head.append(corner);
   for (let c = 0; c < shownCols(); c++) {
     const col = S.columns[c];
+    if (S.hidden.has(col.name)) continue;
     const h = el('div', 'cell hcell');
     h.style.width = S.widths[c] + 'px';
+    const grip = el('span', 'resizer');
+    grip.title = 'Drag to change the width. Double-click to fit.';
+    grip.addEventListener('click', e => e.stopPropagation());
+    grip.addEventListener('pointerdown', e => startResize(e, c, h));
+    grip.addEventListener('dblclick', e => { e.stopPropagation(); delete S.userW[col.name]; S.widths[c] = M.autoWidth(col.name, typeLabel(col), []); S.autoSized = false; saveState(); buildHeader(); layout(); });
+    h.append(grip);
     const top = el('div', 'hrow');
     top.append(el('span', 'hname', col.name));
     const arrow = el('span', 'sort', S.sort && S.sort.col === col.name ? (S.sort.dir === 'asc' ? '▲' : '▼') : '');
@@ -235,15 +273,117 @@ function setColumns(columns, chat) {
   S.chat = chat || '';
   tabChat.disabled = !S.chat;
   tabChat.title = S.chat ? 'Messages as a conversation (C)' : 'No messages, role/content or prompt keys found in the first records';
-  S.widths = S.columns.slice(0, MAX_COLS).map(c => M.autoWidth(c.name, typeLabel(c), []));
+  S.widths = S.columns.slice(0, MAX_COLS).map(c => S.userW[c.name] || M.autoWidth(c.name, typeLabel(c), []));
   S.autoSized = false;
   buildHeader();
+  if (!colMenu.hidden) fillColMenu();
+  updateColsBtn();
 }
+
+// ---------- column width and visibility ----------
+function startResize(e, c, h) {
+  e.preventDefault();
+  e.stopPropagation();
+  const x0 = e.clientX;
+  const w0 = S.widths[c];
+  const name = S.columns[c].name;
+  const grip = e.currentTarget;
+  try { grip.setPointerCapture(e.pointerId); } catch { /* ok */ }
+  document.body.classList.add('resizing');
+  const move = ev => {
+    const w = Math.max(40, Math.min(2000, Math.round(w0 + ev.clientX - x0)));
+    S.widths[c] = w;
+    h.style.width = w + 'px';
+    layout();
+  };
+  const up = () => {
+    grip.removeEventListener('pointermove', move);
+    grip.removeEventListener('pointerup', up);
+    grip.removeEventListener('pointercancel', up);
+    document.body.classList.remove('resizing');
+    S.userW[name] = S.widths[c];
+    saveState();
+    buildHeader();
+  };
+  grip.addEventListener('pointermove', move);
+  grip.addEventListener('pointerup', up);
+  grip.addEventListener('pointercancel', up);
+}
+
+function updateColsBtn() {
+  let hid = 0;
+  for (let c = 0; c < shownCols(); c++) if (isHidden(c)) hid++;
+  btnCols.textContent = hid ? `Columns (${fmtN(hid)} hidden)` : 'Columns';
+  btnCols.classList.toggle('on', hid > 0);
+}
+
+function setHidden(name, hide) {
+  if (hide) S.hidden.add(name); else S.hidden.delete(name);
+  let shown = 0;
+  for (let c = 0; c < shownCols(); c++) if (!isHidden(c)) shown++;
+  if (!shown && hide) { S.hidden.delete(name); flash('Keep at least one column'); }
+  saveState();
+  updateColsBtn();
+  buildHeader();
+  layout();
+}
+
+function fillColMenu() {
+  colMenu.textContent = '';
+  const top = el('div', 'colmenu-top');
+  const find = el('input', 'colfind');
+  find.type = 'search';
+  find.placeholder = 'Find a column';
+  find.setAttribute('aria-label', 'Find a column');
+  const all = btn('Show all', 'Show every column', 'link');
+  const none = btn('Hide all but first', 'Hide every column except the first', 'link');
+  top.append(find, all, none);
+  const list = el('div', 'colmenu-list');
+  const items = [];
+  for (let c = 0; c < shownCols(); c++) {
+    const col = S.columns[c];
+    const lab = el('label', 'colitem');
+    const box = el('input');
+    box.type = 'checkbox';
+    box.checked = !S.hidden.has(col.name);
+    box.addEventListener('change', () => { setHidden(col.name, !box.checked); box.checked = !S.hidden.has(col.name); });
+    lab.append(box, el('span', 'colname', col.name), el('span', 'coltype t-' + col.type, col.type));
+    lab.title = `${col.name}: ${typeLabel(col)} filled`;
+    list.append(lab);
+    items.push([col.name.toLowerCase(), lab]);
+  }
+  if (S.columns.length > MAX_COLS) list.append(el('div', 'colnote', `The first ${fmtN(MAX_COLS)} of ${fmtN(S.columns.length)} keys are columns.`));
+  if (!items.length) list.append(el('div', 'colnote', 'No columns yet.'));
+  find.addEventListener('input', () => { const q = find.value.toLowerCase(); for (const [n, lab] of items) lab.hidden = !!q && !n.includes(q); });
+  all.addEventListener('click', () => { S.hidden.clear(); saveState(); updateColsBtn(); buildHeader(); layout(); fillColMenu(); });
+  none.addEventListener('click', () => {
+    for (let c = 1; c < shownCols(); c++) S.hidden.add(S.columns[c].name);
+    if (S.columns[0]) S.hidden.delete(S.columns[0].name);
+    saveState(); updateColsBtn(); buildHeader(); layout(); fillColMenu();
+  });
+  colMenu.append(top, list, el('div', 'colnote', 'Hidden columns are left out of the table and of CSV export. Find and Filter still search them.'));
+  return find;
+}
+
+function openColMenu() {
+  if (!colMenu.hidden) { colMenu.hidden = true; return; }
+  const find = fillColMenu();
+  const r = btnCols.getBoundingClientRect();
+  colMenu.style.top = Math.round(r.bottom + 4) + 'px';
+  colMenu.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
+  colMenu.hidden = false;
+  find.focus();
+}
+btnCols.addEventListener('click', e => { e.stopPropagation(); openColMenu(); });
+colMenu.addEventListener('click', e => e.stopPropagation());
+document.addEventListener('click', () => { colMenu.hidden = true; });
+colMenu.addEventListener('keydown', e => { if (e.key === 'Escape') { colMenu.hidden = true; btnCols.focus(); } });
 
 function autoSize(rows) {
   if (S.autoSized || !rows.length) return;
   S.autoSized = true;
   for (let c = 0; c < shownCols(); c++) {
+    if (S.userW[S.columns[c].name]) continue;
     const samples = [];
     for (const r of rows) if (r.cells && typeof r.cells[c] === 'string') samples.push(r.cells[c].slice(0, 60));
     S.widths[c] = M.autoWidth(S.columns[c].name, typeLabel(S.columns[c]), samples);
@@ -265,7 +405,7 @@ function layout() {
   document.documentElement.style.setProperty('--gutter-w', S.gutterW + 'px');
   const bodyH = Math.min(S.count * ROW_H, M.MAX_BODY_PX);
   sizer.style.height = (HEAD_H + bodyH) + 'px';
-  const w = totalWidth();
+  const w = contentWidth();
   sizer.style.width = w + 'px';
   stage.style.width = w + 'px';
   head.style.width = w + 'px';
@@ -317,7 +457,7 @@ function render() {
     r._g.textContent = row ? fmtN(row.line) : '';
     if (!row) {
       fillCells(r, cols);
-      for (let c = 0; c < cols; c++) { const d = r._cells[c]; d.className = 'cell pending'; d.textContent = ''; d.style.width = S.widths[c] + 'px'; }
+      for (let c = 0; c < cols; c++) { const d = r._cells[c]; d.className = 'cell pending'; d.textContent = ''; d.style.width = S.widths[c] + 'px'; d.hidden = isHidden(c); }
       missing.push(pos);
       r.classList.remove('badrow', 'truncrow');
       continue;
@@ -327,7 +467,7 @@ function render() {
     if (row.bad || row.trunc) {
       fillCells(r, 0);
       r.append(r._wide);
-      r._wide.style.width = Math.max(300, totalWidth() - S.gutterW) + 'px';
+      r._wide.style.width = Math.max(300, contentWidth() - S.gutterW) + 'px';
       r._wide.textContent = row.bad
         ? `Bad JSON (${row.bad})   ${row.preview}`
         : `Line is ${fmtBytes(row.trunc)}, over the 5 MB display limit. Open the line in the editor to see it.   ${row.preview}`;
@@ -341,6 +481,7 @@ function render() {
       const v = row.cells[c];
       const kind = row.kinds[c];
       d.className = 'cell k-' + kind + (NUMERIC.has(kind) ? ' num' : '');
+      d.hidden = isHidden(c);
       d.textContent = v === null || v === undefined ? '' : v;
     }
   }
@@ -680,7 +821,7 @@ btnFollow.addEventListener('click', () => {
 exportSel.addEventListener('change', () => {
   const f = exportSel.value;
   exportSel.value = '';
-  if (f) post({ type: 'export', format: f });
+  if (f) post(f === 'csv' && S.hidden.size ? { type: 'export', format: f, hidden: [...S.hidden].slice(0, 1000) } : { type: 'export', format: f });
 });
 badBtn.addEventListener('click', () => post({ type: 'showBad' }));
 nextBadBtn.addEventListener('click', () => post({ type: 'nextBad', after: S.focus }));
@@ -780,6 +921,7 @@ window.addEventListener('message', ev => {
       S.pending.clear();
       recCache.clear();
       setColumns(m.columns, m.chat);
+      showHint(m);
       updateStats(m);
       showBanner();
       if (S.focus >= S.count) S.focus = S.count - 1;
@@ -803,6 +945,7 @@ window.addEventListener('message', ev => {
     }
     case 'columns':
       setColumns(m.columns, m.chat);
+      if (m.sampled !== undefined) showHint(m);
       S.cache.clear();
       S.pending.clear();
       layout();

@@ -142,6 +142,14 @@ function activate(context) {
       if (!target) return vscode.window.showInformationMessage('Open or select a .jsonl or .ndjson file first.');
       await vscode.commands.executeCommand('vscode.openWith', target, VIEW_TYPE);
     }),
+    // Any file as JSON Lines: logs (.log), exports saved as .json or .txt, files without an extension.
+    vscode.commands.registerCommand('jsonlViewer.openAny', async (uri) => {
+      const tab = vscode.window.tabGroups && vscode.window.tabGroups.activeTabGroup && vscode.window.tabGroups.activeTabGroup.activeTab;
+      const target = uri instanceof vscode.Uri ? uri
+        : (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.uri) || (tab && tab.input && tab.input.uri instanceof vscode.Uri ? tab.input.uri : undefined);
+      if (!target || target.scheme === 'untitled') return vscode.window.showInformationMessage('Save the file first, or pick a file in the Explorer, then run "Open as JSON Lines" again.');
+      await vscode.commands.executeCommand('vscode.openWith', target, VIEW_TYPE);
+    }),
     vscode.commands.registerCommand('jsonlViewer.getStarted', () =>
       vscode.commands.executeCommand('workbench.action.openWalkthrough', 'zovo.zovo-jsonl-viewer#jsonlViewer.start', false)),
   );

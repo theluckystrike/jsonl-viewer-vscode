@@ -36,7 +36,9 @@ function validateWebviewMessage(m) {
     case 'gotoLine':
       return int(m.line, 1, BIG) ? { type: m.type, line: m.line } : null;
     case 'export':
-      return ['csv', 'json', 'jsonl'].includes(m.format) ? { type: m.type, format: m.format } : null;
+      if (!['csv', 'json', 'jsonl'].includes(m.format)) return null;
+      if (Array.isArray(m.hidden) && m.hidden.length && m.hidden.length <= 1000 && m.hidden.every(h => str(h, 1000))) return { type: m.type, format: m.format, hidden: m.hidden.slice() };
+      return { type: m.type, format: m.format };
     case 'openLine':
       return int(m.index, 0, BIG) ? { type: m.type, index: m.index } : null;
     case 'copy':
@@ -83,6 +85,7 @@ function createSession({ doc, post, host = {} }) {
     for (const r of recs) { if (r.truncated) continue; const p = parseLine(r.text); if (p.ok) values.push(p.value); }
     S.columns = inferColumns(values);
     S.sampled = n;
+    S.sampledOk = values.length;
     S.chat = chatShape(S.columns);
   }
 
@@ -90,7 +93,7 @@ function createSession({ doc, post, host = {} }) {
     const d = S.doc;
     return {
       type: 'init', name: d.name, format: d.format, size: d.size, sizeText: fmtBytes(d.size), unpacked: d.gz ? d.bytes : 0,
-      columns: S.columns, chat: S.chat, count: d.count, done: d.done, ms: d.indexMs, capped: d.capped, tail: d.canTail,
+      columns: S.columns, chat: S.chat, sampled: S.sampled || 0, sampledOk: S.sampledOk || 0, count: d.count, done: d.done, ms: d.indexMs, capped: d.capped, tail: d.canTail,
       viewCount: viewCount(), viewVersion: S.viewVersion, viewLabel: S.viewLabel, sort: S.sort, bad: badMsg(), error: S.error,
       limits: { line: L.MAX_LINE_BYTES, file: L.MAX_FILE_BYTES, page: L.PAGE },
     };
@@ -116,7 +119,7 @@ function createSession({ doc, post, host = {} }) {
     post(initMsg());
     try { await S.doc.whenDone; } catch (e) { post({ type: 'error', message: 'Reading stopped: ' + e.message }); }
     if (S.disposed) return;
-    if (S.sampled < Math.min(S.doc.count, L.SCHEMA_SAMPLE)) { await sample(); post({ type: 'columns', columns: S.columns, chat: S.chat }); }
+    if (S.sampled < Math.min(S.doc.count, L.SCHEMA_SAMPLE)) { await sample(); post({ type: 'columns', columns: S.columns, chat: S.chat, sampled: S.sampled, sampledOk: S.sampledOk }); }
     post({ type: 'progress', ...S.doc.progress(), capped: S.doc.capped, viewCount: viewCount() });
     validate(0);
   }
@@ -333,7 +336,10 @@ function createSession({ doc, post, host = {} }) {
     post({ type: 'found', what: 'bad', pos: -1 });
   }
 
-  async function doExport(format) {
+  async function doExport(format, hidden) {
+    const hide = new Set(hidden || []);
+    let cols = S.columns.filter(c => !hide.has(c.name));
+    if (!cols.length) cols = S.columns;
     if (!host.openWriter) return;
     const base = S.doc.name.replace(/\.gz$/i, '').replace(/\.(jsonl|ndjson|jsonlines)$/i, '');
     const w = await host.openWriter(format, `${base}${S.view ? '-filtered' : ''}.${format}`);
@@ -347,7 +353,7 @@ function createSession({ doc, post, host = {} }) {
     let buf = '';
     const flush = async () => { if (buf) { const s = buf; buf = ''; await w.write(s); } };
     try {
-      if (format === 'csv') buf += csvHeader(S.columns);
+      if (format === 'csv') buf += csvHeader(cols);
       if (format === 'json') buf += '[\n';
       let stopped = false;
       for (let pos = 0; pos < total && !stopped; pos += 2000) {
@@ -360,7 +366,7 @@ function createSession({ doc, post, host = {} }) {
           if (rec.truncated) { skipped++; continue; }
           const p = parseLine(rec.text);
           if (!p.ok) { skipped++; continue; }
-          if (format === 'csv') buf += csvRow(p.value, S.columns, VALUE_COL);
+          if (format === 'csv') buf += csvRow(p.value, cols, VALUE_COL);
           else if (format === 'jsonl') buf += rec.text + '\n';
           else { buf += (first ? '  ' : ',\n  ') + rec.text; first = false; }
           written++;
@@ -455,7 +461,7 @@ function createSession({ doc, post, host = {} }) {
           if (id < 0) return post({ type: 'found', what: 'line', pos: -1, line: m.line });
           return post({ type: 'found', what: 'line', pos: posOf(id), line: m.line });
         }
-        case 'export': return await doExport(m.format);
+        case 'export': return await doExport(m.format, m.hidden);
         case 'openLine': {
           if (m.index >= S.doc.count) return;
           const [rec] = await S.doc.readRecords([m.index]);

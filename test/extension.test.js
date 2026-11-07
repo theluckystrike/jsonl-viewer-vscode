@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 
-test('activate registers the custom editor and all four commands', () => {
+test('activate registers the custom editor and all five commands', () => {
   const dist = path.join(__dirname, '..', 'dist', 'extension.js');
   if (!fs.existsSync(dist)) require('child_process').execFileSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'build.js')]);
   const reg = { editors: [], commands: [] };
@@ -24,8 +24,8 @@ test('activate registers the custom editor and all four commands', () => {
     ext.activate(ctx);
     assert.deepStrictEqual(reg.editors.map(e => e[0]), ['jsonlViewer.viewer']);
     assert.strictEqual(reg.editors[0][2].webviewOptions.retainContextWhenHidden, false);
-    assert.deepStrictEqual(reg.commands.sort(), ['jsonlViewer.getStarted', 'jsonlViewer.moreViewers', 'jsonlViewer.open', 'jsonlViewer.supportDeveloper']);
-    assert.strictEqual(ctx.subscriptions.length, 5);
+    assert.deepStrictEqual(reg.commands.sort(), ['jsonlViewer.getStarted', 'jsonlViewer.moreViewers', 'jsonlViewer.open', 'jsonlViewer.openAny', 'jsonlViewer.supportDeveloper']);
+    assert.strictEqual(ctx.subscriptions.length, 6);
     const pkg = require('../package.json');
     assert.strictEqual(pkg.contributes.customEditors[0].viewType, 'jsonlViewer.viewer');
     for (const c of pkg.contributes.commands) assert.ok(reg.commands.includes(c.command), c.command);

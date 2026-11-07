@@ -1,8 +1,8 @@
 {
   "name": "zovo-jsonl-viewer",
   "displayName": "JSONL Viewer & NDJSON Viewer (JSONL Table)",
-  "description": "JSONL viewer and NDJSON viewer that opens .jsonl and .ndjson files as a table, as pretty records or as a chat view for LLM datasets. Fast on large files, with search, filters and live tail. Offline.",
-  "version": "0.1.5",
+  "description": "JSONL viewer and NDJSON viewer that opens .jsonl, .ndjson and .log files as a table, as pretty records or as a chat view for LLM datasets. Hide and resize columns. Fast on large files. Offline.",
+  "version": "0.2.0",
   "publisher": "zovo",
   "license": "MIT",
   "icon": "icon.png",
@@ -36,7 +36,7 @@
     "table",
     "dataset",
     "fine-tuning",
-    "openai",
+    "log viewer",
     "chat",
     "evals",
     "llm",
@@ -93,6 +93,11 @@
         "icon": "$(table)"
       },
       {
+        "command": "jsonlViewer.openAny",
+        "title": "Open as JSON Lines (any file)",
+        "category": "JSONL Viewer"
+      },
+      {
         "command": "jsonlViewer.getStarted",
         "title": "Get Started",
         "category": "JSONL Viewer"
@@ -114,6 +119,11 @@
           "command": "jsonlViewer.open",
           "when": "resourceFilename =~ /\\.(jsonl|ndjson|jsonlines)(\\.gz)?$/i",
           "group": "navigation@20"
+        },
+        {
+          "command": "jsonlViewer.openAny",
+          "when": "!explorerResourceIsFolder && resourceFilename =~ /\\.(log|json|txt|out|data|jsonl\\.txt)$/i",
+          "group": "navigation@21"
         }
       ],
       "editor/title": [
@@ -127,6 +137,17 @@
         {
           "command": "jsonlViewer.open",
           "when": "resourceFilename =~ /\\.(jsonl|ndjson|jsonlines)(\\.gz)?$/i"
+        },
+        {
+          "command": "jsonlViewer.openAny",
+          "when": "resourceSet && resourceScheme != untitled"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "jsonlViewer.openAny",
+          "when": "resourceScheme != untitled",
+          "group": "navigation@30"
         }
       ]
     },

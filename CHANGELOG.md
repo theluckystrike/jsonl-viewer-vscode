@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 (2026-11-07)
+
+- Columns: a Columns button above the table shows or hides each column, with a find box, Show all and Hide all but first. Drag a column edge in the header to change its width, and double-click it to fit again. The tab remembers both.
+- CSV export saves only the visible columns. JSON and JSON Lines export still write whole records.
+- Open as JSON Lines (any file): from the Explorer menu for `.log`, `.json`, `.txt`, `.out` and `.data` files, from an editor tab's menu, or from the Command Palette. A file whose first lines are not JSON shows a note with Open as Text.
+
 ## 0.1.5 (2026-11-07)
 
 - "More free viewers" now starts with the Zovo extensions most related to this one. Picking one opens its Marketplace page, where you choose to install it.
