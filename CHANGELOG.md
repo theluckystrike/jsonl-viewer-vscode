@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 (2026-11-07)
+
+- The Marketplace name is now "JSONL Viewer, Large JSONL Table & NDJSON Viewer" (it was "JSONL Viewer & NDJSON Viewer (JSONL Table)"). The extension id, commands and settings stay the same.
+
 ## 0.2.1 (2026-11-07)
 
 - Fix: when the table was narrower than the editor, its last column was cut off after the first rows loaded, so numbers in that column did not show. The table now widens with its columns.

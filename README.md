@@ -1,4 +1,4 @@
-# JSONL Viewer & NDJSON Viewer (JSONL Table)
+# JSONL Viewer, Large JSONL Table & NDJSON Viewer
 
 <a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/i/zovo.zovo-jsonl-viewer?label=VS%20Code%20installs" alt="VS Code installs"></a>
 <a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/v/zovo.zovo-jsonl-viewer?label=version" alt="Version"></a>
