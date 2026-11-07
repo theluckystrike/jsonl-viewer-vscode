@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 (2026-11-07)
+
+- The footer under the viewer has a "Rate" link next to Sponsor and More free viewers. It opens the review page of this extension on the Marketplace. Nothing pops up and nothing asks you for a rating. "Hide" still hides the whole line.
+- The Marketplace name is now "JSONL Viewer & NDJSON Viewer (JSONL Table)" (it was "JSONL Viewer & NDJSON Table Viewer"). The extension id, commands and settings stay the same.
+- The Marketplace description now opens with "JSONL viewer and NDJSON viewer that opens .jsonl and .ndjson files as a table, as pretty records or as a chat view for LLM datasets".
+- Marketplace search keywords updated.
+
 ## 0.1.3 (2026-11-07)
 
 - The "More free viewers" list and the README list now show the 15 Zovo extensions on the Marketplace under their current names, and 12 that are coming soon.

@@ -1,10 +1,10 @@
-# JSONL Viewer
+# JSONL Viewer & NDJSON Viewer (JSONL Table)
 
 <a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/i/zovo.zovo-jsonl-viewer?label=VS%20Code%20installs" alt="VS Code installs"></a>
 <a href="https://marketplace.visualstudio.com/items?itemName=zovo.zovo-jsonl-viewer"><img src="https://img.shields.io/visual-studio-marketplace/v/zovo.zovo-jsonl-viewer?label=version" alt="Version"></a>
 <img src="https://img.shields.io/badge/offline-no%20telemetry-2ea44f" alt="Offline, no telemetry">
 
-Open any `.jsonl`, `.ndjson` or `.jsonl.gz` file as a table, a record tree or a chat transcript, with the first rows on screen before the rest of the file is read.
+A JSONL viewer and NDJSON viewer for VS Code. Open any `.jsonl`, `.ndjson` or `.jsonl.gz` file as a table, a record tree or a chat transcript, with the first rows on screen before the rest of the file is read.
 
 | Chat view of a fine-tuning set | Table with a filter, a sort and one cell opened |
 |---|---|
@@ -76,7 +76,7 @@ Zovo extensions have no ads and no tracking, and sponsors pay for the time that 
 ## More viewers by Zovo
 
 - [Large JSON Viewer & JSON Tree](https://marketplace.visualstudio.com/items?itemName=zovo.zovo-json-tree-viewer) shows large JSON files as a searchable tree, copies JSONPath and turns arrays of objects into a table.
-- [CSV Viewer, Excel Viewer & Parquet Viewer](https://marketplace.visualstudio.com/items?itemName=zovo.table-viewer-vscode) opens CSV, TSV, Excel and Parquet files as a sortable, filterable table.
+- [CSV Viewer, Excel Viewer (XLSX) & Parquet Viewer](https://marketplace.visualstudio.com/items?itemName=zovo.table-viewer-vscode) opens CSV, TSV, Excel and Parquet files as a sortable, filterable table.
 - [Claude Code History & Codex History Viewer](https://marketplace.visualstudio.com/items?itemName=zovo.agent-session-viewer) browses and searches your local Claude Code and Codex sessions.
 - [SQLite Viewer & DB Viewer (Read-Only)](https://marketplace.visualstudio.com/items?itemName=zovo.sqlite-table-viewer) browses SQLite tables read-only and runs SELECT queries.
 - [Claude Code Usage & Codex Usage Cost Meter](https://marketplace.visualstudio.com/items?itemName=zovo.ai-usage-meter) shows Claude Code and Codex tokens and estimated cost from your local session files.
@@ -103,6 +103,8 @@ Coming soon to the Marketplace, with the code on GitHub now.
 - [ZIP Viewer & Archive Explorer (JAR, TAR, GZ)](https://github.com/theluckystrike/archive-explorer-vscode) browses ZIP, JAR, VSIX, TAR and GZ files, opens entries in tabs and extracts them safely.
 - [GCode Viewer & 3D Print Preview](https://github.com/theluckystrike/gcode-viewer-vscode) shows GCode toolpaths in 3D layer by layer, with print time and filament use.
 - [EPUB Reader & EPUB Viewer](https://github.com/theluckystrike/epub-reader-vscode) reads EPUB books with a table of contents, search and light, sepia or dark themes.
+- [HAR Viewer & HTTP Archive Viewer](https://github.com/theluckystrike/har-viewer-vscode) opens HAR files from browser DevTools with a timing waterfall, filters and a redacted copy for sharing.
+- [Font Viewer & Font Preview (TTF, OTF, WOFF)](https://github.com/theluckystrike/font-viewer-vscode) opens TTF, OTF, WOFF, WOFF2 and TTC fonts with a glyph grid, a type tester with variable axes and the license fields.
 - [File Viewers Pack](https://github.com/theluckystrike/zovo-file-viewers) installs the PDF, table, Word, PowerPoint, HDF5 and tensor viewers in one step.
 
 ## License
